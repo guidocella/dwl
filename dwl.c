@@ -103,6 +103,7 @@ typedef struct {
 #endif
 	int bw;
 	unsigned int tags;
+	unsigned int switchtotag;
 	int isfloating;
 	uint32_t resize; /* configure serial of a pending resize */
 } Client;
@@ -161,6 +162,7 @@ typedef struct {
 	const char *id;
 	const char *title;
 	unsigned int tags;
+	unsigned int switchtotag;
 	int isfloating;
 	int monitor;
 } Rule;
@@ -357,6 +359,11 @@ applyrules(Client *c)
 			wl_list_for_each(m, &mons, link)
 				if (r->monitor == i++)
 					mon = m;
+			if (r->switchtotag) {
+				Arg a = { .ui = r->tags };
+				c->switchtotag = selmon->tagset[selmon->seltags];
+				view(&a);
+			}
 		}
 	}
 	setmon(c, mon, newtags);
@@ -1716,6 +1723,10 @@ unmapnotify(struct wl_listener *listener, void *data)
 	setmon(c, NULL, 0);
 	wl_list_remove(&c->flink);
 	wl_list_remove(&c->slink);
+	if (c->switchtotag) {
+		Arg a = { .ui = c->switchtotag };
+		view(&a);
+	}
 }
 
 void
