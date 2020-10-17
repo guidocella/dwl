@@ -33,6 +33,16 @@ wlr-layer-shell-unstable-v1-protocol.c:
 
 wlr-layer-shell-unstable-v1-protocol.o: wlr-layer-shell-unstable-v1-protocol.h
 
+wlr-output-power-management-unstable-v1-protocol.h:
+	$(WAYLAND_SCANNER) server-header \
+		protocols/wlr-output-power-management-unstable-v1.xml $@
+
+wlr-output-power-management-unstable-v1-protocol.c:
+	$(WAYLAND_SCANNER) private-code \
+		protocols/wlr-output-power-management-unstable-v1.xml $@
+
+wlr-output-power-management-unstable-v1-protocol.o: wlr-output-power-management-unstable-v1-protocol.h
+
 config.h: | config.def.h
 	cp config.def.h $@
 
