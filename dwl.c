@@ -104,6 +104,7 @@ typedef struct {
 	int bw;
 	unsigned int tags;
 	int isfloating;
+	bool centered;
 	uint32_t resize; /* configure serial of a pending resize */
 } Client;
 
@@ -233,6 +234,7 @@ static void spawn(const Arg *arg);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void tile(Monitor *m);
+static void togglecenter(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
@@ -269,6 +271,8 @@ static struct wlr_output_layout *output_layout;
 static struct wlr_box sgeom;
 static struct wl_list mons;
 static Monitor *selmon;
+
+static bool center;
 
 /* global event handlers */
 static struct wl_listener cursor_axis = {.notify = axisnotify};
@@ -359,6 +363,8 @@ applyrules(Client *c)
 					mon = m;
 		}
 	}
+	if (!strcmp(appid, "Alacritty"))
+		c->centered = true;
 	setmon(c, mon, newtags);
 }
 
@@ -1653,6 +1659,10 @@ tile(Monitor *m)
 		if (!VISIBLEON(c, m) || c->isfloating)
 			continue;
 		if (i < m->nmaster) {
+			if (n == 1 && center && c->centered) {
+				resize(c, m->w.width / 4, m->w.y, m->w.width / 2, m->w.height - 2 * c->bw, 0);
+				return;
+			}
 			h = (m->w.height - my) / (MIN(n, m->nmaster) - i);
 			resize(c, m->w.x, m->w.y + my, mw, h, 0);
 			my += c->geom.height;
@@ -1663,6 +1673,13 @@ tile(Monitor *m)
 		}
 		i++;
 	}
+}
+
+void
+togglecenter(const Arg *arg)
+{
+	center = !center;
+	tile(selmon);
 }
 
 void
